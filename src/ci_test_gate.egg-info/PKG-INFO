@@ -1,0 +1,28 @@
+Metadata-Version: 2.4
+Name: ci-test-gate
+Version: 0.1.0
+Summary: LLM-powered test selection for CI pipelines — picks which tests to run based on semantic analysis of your diff
+Author: Yunaremaia
+Author-email: Yunaremaia <yunare@gmail.com>
+License: MIT
+Keywords: ci,testing,llm,test-selection,github-actions,devops
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Topic :: Software Development :: Testing
+Classifier: Topic :: Software Development :: Quality Assurance
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: click>=8.0
+Requires-Dist: pydantic>=2.0
+Requires-Dist: rich>=13.0
+Requires-Dist: httpx>=0.25
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0; extra == "dev"
+Requires-Dist: pytest-cov>=4.0; extra == "dev"
+Requires-Dist: pytest-asyncio>=0.21; extra == "dev"
+Requires-Dist: ruff>=0.4.0; extra == "dev"
+Requires-Dist: mypy>=1.0; extra == "dev"
+Dynamic: author
+Dynamic: requires-python

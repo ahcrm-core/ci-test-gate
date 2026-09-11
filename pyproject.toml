@@ -1,0 +1,54 @@
+[project]
+name = "ci-test-gate"
+version = "0.1.0"
+description = "LLM-powered test selection for CI pipelines — picks which tests to run based on semantic analysis of your diff"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Yunaremaia", email = "yunare@gmail.com" }]
+keywords = [
+    "ci",
+    "testing",
+    "llm",
+    "test-selection",
+    "github-actions",
+    "devops",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Software Development :: Quality Assurance",
+]
+dependencies = [
+    "click>=8.0",
+    "pydantic>=2.0",
+    "rich>=13.0",
+    "httpx>=0.25",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "pytest-asyncio>=0.21",
+    "ruff>=0.4.0",
+    "mypy>=1.0",
+]
+
+[project.scripts]
+ci-test-gate = "ci_test_gate.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP"]
+ignore = ["E501"]
