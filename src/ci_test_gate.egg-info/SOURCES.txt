@@ -1,8 +1,13 @@
+LICENSE
+README.md
 pyproject.toml
 setup.py
 src/ci_test_gate/__init__.py
+src/ci_test_gate/classifier.py
 src/ci_test_gate/cli.py
 src/ci_test_gate/context.py
+src/ci_test_gate/context_builder.py
+src/ci_test_gate/diff_parser.py
 src/ci_test_gate/llm.py
 src/ci_test_gate/models.py
 src/ci_test_gate/parser.py
@@ -12,4 +17,7 @@ src/ci_test_gate.egg-info/dependency_links.txt
 src/ci_test_gate.egg-info/entry_points.txt
 src/ci_test_gate.egg-info/requires.txt
 src/ci_test_gate.egg-info/top_level.txt
+tests/test_classifier.py
+tests/test_context_builder.py
+tests/test_diff_parser.py
 tests/test_main.py

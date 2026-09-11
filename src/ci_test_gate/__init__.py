@@ -1,13 +1,15 @@
 """ci-test-gate — LLM-powered test selection for CI."""
-
-from .models import AnalysisResult, Diff, TestRecommendation, TestRisk
-from .parser import parse_unified_diff
-
 __version__ = "0.1.0"
+
+from .diff_parser import DiffParser, FileChange
+from .context_builder import ContextBuilder, ChangeContext
+from .classifier import TestClassifier, TestRecommendation
+
 __all__ = [
-    "AnalysisResult",
-    "Diff",
+    "DiffParser",
+    "FileChange",
+    "ContextBuilder",
+    "ChangeContext",
+    "TestClassifier",
     "TestRecommendation",
-    "TestRisk",
-    "parse_unified_diff",
 ]

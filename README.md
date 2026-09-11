@@ -1,97 +1,54 @@
 # ci-test-gate
 
-**LLM-powered test selection for CI pipelines — picks which tests to run based on semantic analysis of your diff.**
+**LLM-powered test selection for CI — run only the tests that matter.**
+
+Tired of waiting 30+ minutes for CI when your change touches one file? `ci-test-gate` analyzes your PR diff and recommends which tests to run, skip, or require.
 
 ```bash
-pip install ci-test-gate
-ci-test-gate analyze --output markdown
+pip install git+https://github.com/yunaremaia/ci-test-gate.git
+ci-test-gate suggest --diff pr.diff --test-files tests.txt
 ```
 
-## The Problem
+### How it works
 
-CI suites are slow. Running 5,000+ tests on every PR wastes time and money. Path-based selection (`pytest tests/api/`) is fragile — it doesn't capture cross-module impact. Manual selection is error-prone.
-
-Meanwhile, 84% of developers use AI coding tools, but **no open-source tool uses AI to pick which tests to run**.
-
-## The Solution
-
-`ci-test-gate` analyzes your PR's diff, builds context (language, framework, imports), and uses an LLM to classify each test suite by risk:
-
-- 🔴 **REQUIRED** — Must run (direct test of changed code, critical path)
-- 🟡 **RECOMMENDED** — Should run (integration tests touching related modules)
-- 🟢 **OPTIONAL** — Can skip (unrelated modules, pure docs)
-
-## Quick Start
-
-```bash
-# Install
-pip install ci-test-gate
-
-# Analyze current branch vs main
-ci-test-gate analyze
-
-# Output as Markdown (for PR comments)
-ci-test-gate analyze --output markdown
-
-# Gate mode (fails if required tests missing)
-ci-test-gate analyze --mode gate
-
-# Local development
-ci-test-gate discover
+```
+┌──────────────────────────────────────────────────┐
+│                    GitHub PR                      │
+│                     │                             │
+│         git diff main...HEAD                     │
+│                     │                             │
+│                     ▼                             │
+│  ┌────────────────────────────────────────────┐  │
+│  │           ci-test-gate engine              │  │
+│  │                                            │  │
+│  │  1. Parse diff into structured changes     │  │
+│  │  2. Build context (imports, functions)     │  │
+│  │  3. Classify tests (required/recommended/  │  │
+│  │     optional)                              │  │
+│  │  4. Output recommendation (JSON/Markdown) │  │
+│  └────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────┘
 ```
 
-## GitHub Action
+### Why?
 
-```yaml
-# .github/workflows/test-gate.yml
-name: Test Gate
-on: pull_request
+- **Save CI minutes** — skip irrelevant tests
+- **Faster feedback** — required tests run first
+- **Risk-aware** — conservative by default
+- **Multi-language** — Python, JS/TS, Go, Rust
 
-jobs:
-  test-gate:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: yunaremaia/ci-test-gate@v0.1.0
-        with:
-          mode: suggest
-          output: markdown
-```
+### Modes
 
-## How It Works
+- `suggest` — Comment on PR with recommendations
+- `gate` — Block merge if required tests didn't run
+- `local` — Run before push to catch issues early
 
-1. **Diff Parser** — Parses `git diff main...HEAD` into structured changes
-2. **Context Builder** — Detects language, test framework, imports, and finds test files
-3. **LLM Classifier** — Sends context to LLM with a system prompt for risk classification
-4. **Output** — JSON for CI, Markdown for PR comments, or rich table for local use
+### Roadmap
 
-## Fallback
+- [ ] LLM semantic classification (v0.2.0)
+- [ ] Gate mode enforcement (v0.2.0)
+- [ ] Dashboard with savings metrics (v0.4.0)
 
-If no LLM API key is configured, `ci-test-gate` falls back to rule-based classification:
-- Test files that changed → REQUIRED
-- Source files with matching test files (`foo.py` → `test_foo.py`) → REQUIRED
-- Everything else → RECOMMENDED
+### License
 
-## Supported Languages
-
-| Language   | Test Framework | Status |
-|------------|----------------|--------|
-| Python     | pytest         | ✅     |
-| JavaScript | jest           | ✅     |
-| TypeScript | jest           | ✅     |
-| Rust       | cargo test     | ✅     |
-| Go         | go test        | ✅     |
-| Java       | junit          | ✅     |
-
-## Development
-
-```bash
-git clone https://github.com/yunaremaia/ci-test-gate.git
-cd ci-test-gate
-pip install -e ".[dev]"
-pytest
-```
-
-## License
-
-MIT © Yunaremaia
+MIT

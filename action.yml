@@ -1,35 +1,26 @@
 name: 'ci-test-gate'
-description: 'LLM-powered test selection — picks which tests to run based on semantic analysis of your diff'
-
+description: 'LLM-powered test selection for CI — run only the tests that matter'
 branding:
   icon: 'git-pull-request'
   color: 'green'
 
 inputs:
-  diff-path:
-    description: 'Path to the diff file (default: auto-detect from PR)'
+  diff-file:
+    description: 'Path to diff file'
+    required: false
+    default: ''
+  test-files-list:
+    description: 'Path to file listing all test files (one per line)'
     required: false
     default: ''
   mode:
-    description: 'Operation mode: suggest, gate, or local'
+    description: 'Operation mode: suggest or gate'
     required: false
     default: 'suggest'
-  model:
-    description: 'LLM model to use'
+  github-token:
+    description: 'GitHub token for PR comments'
     required: false
-    default: 'gpt-4o-mini'
-  openai-api-key:
-    description: 'OpenAI API key (or use OPENAI_API_KEY env var)'
-    required: false
-    default: ''
-  test-framework:
-    description: 'Test framework (auto-detected if not specified)'
-    required: false
-    default: ''
-  comment-on-pr:
-    description: 'Post results as PR comment'
-    required: false
-    default: 'true'
+    default: ${{ github.token }}
 
 runs:
   using: 'composite'
@@ -41,43 +32,15 @@ runs:
 
     - name: Install ci-test-gate
       shell: bash
-      run: pip install ci-test-gate
+      run: |
+        pip install git+https://github.com/yunaremaia/ci-test-gate.git
 
     - name: Run ci-test-gate
       shell: bash
-      env:
-        OPENAI_API_KEY: ${{ inputs.openai-api-key || env.OPENAI_API_KEY }}
-        CI_TEST_GATE_MODEL: ${{ inputs.model }}
       run: |
-        MODE="${{ inputs.mode }}"
-        DIFF="${{ inputs.diff-path }}"
-        FRAMEWORK="${{ inputs.test-framework }}"
-
-        ARGS="--mode $MODE"
-        if [ -n "$DIFF" ]; then
-          ARGS="$ARGS --diff $DIFF"
+        if [ -n "${{ inputs.diff-file }}" ]; then
+          ci-test-gate suggest --diff "${{ inputs.diff-file }}" --mode ${{ inputs.mode }}
+        else
+          git diff origin/${{ github.base_ref }}...HEAD > /tmp/pr_diff.txt
+          ci-test-gate suggest --diff /tmp/pr_diff.txt --mode ${{ inputs.mode }}
         fi
-        if [ -n "$FRAMEWORK" ]; then
-          ARGS="$ARGS --framework $FRAMEWORK"
-        fi
-
-        if [ "$MODE" = "suggest" ]; then
-          ARGS="$ARGS --format markdown"
-        fi
-
-        eval ci-test-gate $ARGS > /tmp/ci-test-gate-output.txt 2>&1
-        cat /tmp/ci-test-gate-output.txt
-
-    - name: Comment on PR
-      if: inputs.comment-on-pr == 'true' && github.event_name == 'pull_request'
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const fs = require('fs');
-          const output = fs.readFileSync('/tmp/ci-test-gate-output.txt', 'utf8');
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: output
-          });
