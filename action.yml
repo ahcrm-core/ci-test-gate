@@ -25,6 +25,11 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: Checkout repository
+      uses: actions/checkout@v5
+      with:
+        fetch-depth: 0
+
     - name: Set up Python
       uses: actions/setup-python@v6
       with:
@@ -33,7 +38,7 @@ runs:
     - name: Install ci-test-gate
       shell: bash
       run: |
-        pip install git+https://github.com/yunaremaia/ci-test-gate.git
+        pip install ci-test-gate
 
     - name: Run ci-test-gate
       shell: bash
@@ -41,6 +46,7 @@ runs:
         if [ -n "${{ inputs.diff-file }}" ]; then
           ci-test-gate suggest --diff "${{ inputs.diff-file }}" --mode ${{ inputs.mode }}
         else
-          git diff origin/${{ github.base_ref }}...HEAD > /tmp/pr_diff.txt
+          BASE="${{ github.base_ref || 'main' }}"
+          git diff "origin/${BASE}...HEAD" > /tmp/pr_diff.txt
           ci-test-gate suggest --diff /tmp/pr_diff.txt --mode ${{ inputs.mode }}
         fi

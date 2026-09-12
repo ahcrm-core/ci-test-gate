@@ -1,0 +1,8 @@
+- id: ci-test-gate
+  name: Suggest tests to run based on diff
+  entry: ci-test-gate suggest
+  language: python
+  files: '\.(py|js|ts|go|rs|java|rb)$'
+  additional_dependencies:
+    - "ci-test-gate>=0.1.0"
+  args: ["--mode", "suggest"]
