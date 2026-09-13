@@ -25,9 +25,9 @@ jobs:
       - name: Analyze PR
         id: analyze
         run: |
-          OUTPUT=$(ci-test-gate analyze --output markdown --base ${{ github.event.pull_request.base.ref }})
+          git diff ${{ github.event.pull_request.base.ref }}...HEAD | ci-test-gate suggest --diff - --output markdown > /tmp/gate_output.md
           echo "comment<<EOF" >> $GITHUB_OUTPUT
-          echo "$OUTPUT" >> $GITHUB_OUTPUT
+          cat /tmp/gate_output.md >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Comment on PR
