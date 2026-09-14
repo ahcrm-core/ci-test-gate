@@ -1,5 +1,8 @@
 # ci-test-gate
 
+[![CI](https://github.com/yunaremaia/ci-test-gate/actions/workflows/ci.yml/badge.svg)](https://github.com/yunaremaia/ci-test-gate/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/yunaremaia/ci-test-gate/branch/main/graph/badge.svg)](https://codecov.io/gh/yunaremaia/ci-test-gate)
+
 **LLM-powered test selection for CI — run only the tests that matter.**
 
 Tired of waiting 30+ minutes for CI when your change touches one file? `ci-test-gate` analyzes your PR diff and recommends which tests to run, skip, or require.
