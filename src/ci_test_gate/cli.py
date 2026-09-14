@@ -139,6 +139,15 @@ def _handle_local(args) -> int:
     # Output
     if args.output == "json":
         print(recommendation.to_json())
+    elif args.output == "sarif":
+        from ci_test_gate.sarif import recommendation_to_sarif, sarif_to_string
+        sarif_doc = recommendation_to_sarif(
+            recommendation.required,
+            recommendation.recommended,
+            all_changed_files=changes.source_paths,
+            tool_version=__version__,
+        )
+        print(sarif_to_string(sarif_doc))
     else:
         print(recommendation.to_markdown())
 
@@ -178,10 +187,11 @@ def _handle_suggest(args) -> int:
     if args.output == "json":
         print(recommendation.to_json())
     elif args.output == "sarif":
-        from ci_test_gate.sarif import analysis_to_sarif, sarif_to_string
-        sarif_doc = analysis_to_sarif(
-            recommendation,
-            all_changed_files=changes.source_paths,
+        from ci_test_gate.sarif import recommendation_to_sarif, sarif_to_string
+        sarif_doc = recommendation_to_sarif(
+            recommendation.required,
+            recommendation.recommended,
+            all_changed_files=[f.path for f in changes],
             tool_version=__version__,
         )
         print(sarif_to_string(sarif_doc))
