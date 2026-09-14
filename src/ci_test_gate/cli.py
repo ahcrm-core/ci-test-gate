@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -48,10 +49,103 @@ def main(argv: list[str] | None = None) -> int:
         help="Output format",
     )
 
+    # `local` command (pre-push validation)
+    local_parser = subparsers.add_parser("local", help="Local pre-push validation (auto-discovers diff)")
+    local_parser.add_argument(
+        "--base",
+        default="main",
+        help="Base branch to diff against (default: main)",
+    )
+    local_parser.add_argument(
+        "--mode",
+        choices=["suggest", "gate"],
+        default="suggest",
+        help="Output mode: suggest (comment) or gate (fail if required missing)",
+    )
+    local_parser.add_argument(
+        "--output",
+        choices=["json", "markdown"],
+        default="markdown",
+        help="Output format",
+    )
+
     args = parser.parse_args(argv)
 
     if args.command == "suggest":
         return _handle_suggest(args)
+    elif args.command == "local":
+        return _handle_local(args)
+    return 0
+
+
+def _handle_local(args) -> int:
+    """Handle the local command — auto-discovers diff against a base branch."""
+    import subprocess
+
+    # Run git diff to get changed files
+    try:
+        result = subprocess.run(
+            ["git", "diff", "--name-only", f"{args.base}...HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        changed_files = [line for line in result.stdout.splitlines() if line]
+    except subprocess.CalledProcessError as e:
+        print(f"ERROR: Failed to get diff against {args.base}: {e.stderr}", file=sys.stderr)
+        return 1
+
+    if not changed_files:
+        print("No changes detected.")
+        return 0
+
+    # Get diff content for classifier
+    try:
+        result = subprocess.run(
+            ["git", "diff", f"{args.base}...HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        diff_text = result.stdout
+    except subprocess.CalledProcessError as e:
+        print(f"ERROR: Failed to get diff: {e.stderr}", file=sys.stderr)
+        return 1
+
+    # Discover test files
+    try:
+        test_result = subprocess.run(
+            ["git", "ls-files", "tests/**", "test/**", "*_test.py", "*.test.ts", "*.test.js"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        test_files = [line for line in test_result.stdout.splitlines() if line]
+    except subprocess.CalledProcessError:
+        test_files = []
+
+    # Parse diff
+    parser = DiffParser()
+    changes = parser.parse(diff_text)
+
+    # Build context
+    builder = ContextBuilder()
+    context = builder.build(changes)
+
+    # Classify
+    classifier = TestClassifier()
+    recommendation = classifier.classify(changes, context, test_files or None)
+
+    # Output
+    if args.output == "json":
+        print(recommendation.to_json())
+    else:
+        print(recommendation.to_markdown())
+
+    # Gate mode: return non-zero if required tests are missing
+    if args.mode == "gate" and not recommendation.required and test_files:
+        return 2
+
     return 0
 
 
