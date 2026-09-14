@@ -44,7 +44,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     suggest_parser.add_argument(
         "--output",
-        choices=["json", "markdown"],
+        choices=["json", "markdown", "sarif"],
         default="markdown",
         help="Output format",
     )
@@ -64,7 +64,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     local_parser.add_argument(
         "--output",
-        choices=["json", "markdown"],
+        choices=["json", "markdown", "sarif"],
         default="markdown",
         help="Output format",
     )
@@ -177,6 +177,14 @@ def _handle_suggest(args) -> int:
     # Output
     if args.output == "json":
         print(recommendation.to_json())
+    elif args.output == "sarif":
+        from ci_test_gate.sarif import analysis_to_sarif, sarif_to_string
+        sarif_doc = analysis_to_sarif(
+            recommendation,
+            all_changed_files=changes.source_paths,
+            tool_version=__version__,
+        )
+        print(sarif_to_string(sarif_doc))
     else:
         print(recommendation.to_markdown())
 
