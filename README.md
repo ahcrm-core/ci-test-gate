@@ -37,6 +37,8 @@ ci-test-gate suggest --diff pr.diff --test-files tests.txt
 - **Risk-aware** — conservative by default
 - **Multi-language** — Python, JS/TS, Go, Rust
 
+See [docs/LANGUAGES.md](docs/LANGUAGES.md) for language-specific test pattern documentation.
+
 ### Modes
 
 - `suggest` — Comment on PR with recommendations
