@@ -52,3 +52,7 @@ ci-test-gate suggest --diff pr.diff --test-files tests.txt
 ### License
 
 MIT
+
+## Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, testing guidelines, and how to add a new classifier.
