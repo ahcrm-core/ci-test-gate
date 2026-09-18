@@ -151,9 +151,11 @@ def _handle_local(args) -> int:
     else:
         print(recommendation.to_markdown())
 
-    # Gate mode: return non-zero if required tests are missing
-    if args.mode == "gate" and not recommendation.required and test_files:
-        return 2
+    # Gate mode: return non-zero if required tests are being skipped
+    if args.mode == "gate":
+        missing = [t for t in recommendation.required if t not in (test_files or [])]
+        if missing:
+            return 2  # Required tests not covered
 
     return 0
 
@@ -198,9 +200,11 @@ def _handle_suggest(args) -> int:
     else:
         print(recommendation.to_markdown())
 
-    # Gate mode: return non-zero if required tests are missing
-    if args.mode == "gate" and not recommendation.required and test_files:
-        return 2  # No tests identified as required
+    # Gate mode: return non-zero if required tests are being skipped
+    if args.mode == "gate":
+        missing = [t for t in recommendation.required if t not in (test_files or [])]
+        if missing:
+            return 2  # Required tests not covered
 
     return 0
 

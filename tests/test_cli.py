@@ -90,6 +90,7 @@ class TestHandleSuggest:
         assert "tests/test_bar.py" in data["required"]
 
     def test_gate_mode_no_required_tests(self, capsys):
+        """Gate mode returns 0 when no tests are required (nothing to block)."""
         args = self._make_args(
             diff_text=textwrap.dedent("""\
                 diff --git a/docs/README.md b/docs/README.md
@@ -106,8 +107,8 @@ class TestHandleSuggest:
             mode="gate",
         )
         result = _handle_suggest(args)
-        # Gate mode with no required tests returns 2
-        assert result == 2
+        # Gate mode with no required tests = no block needed → returns 0
+        assert result == 0
 
     def test_gate_mode_with_required_tests(self, capsys):
         args = self._make_args(
@@ -127,6 +128,27 @@ class TestHandleSuggest:
         )
         result = _handle_suggest(args)
         # Gate mode with required tests returns 0
+        assert result == 0
+
+    def test_gate_mode_with_required_tests(self, capsys):
+        """Gate mode passes when all required tests are covered."""
+        args = self._make_args(
+            diff_text=textwrap.dedent("""\
+                diff --git a/src/foo.py b/src/foo.py
+                index 1234567..89abcde 100644
+                --- a/src/foo.py
+                +++ b/src/foo.py
+                @@ -1,3 +1,6 @@
+                 def foo():
+                -    return 1
+                +    return 2
+            """),
+            test_files_text="tests/test_foo.py\n",
+            output="markdown",
+            mode="gate",
+        )
+        result = _handle_suggest(args)
+        # Gate mode with required tests covered → returns 0
         assert result == 0
 
 
