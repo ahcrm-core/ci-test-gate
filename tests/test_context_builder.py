@@ -54,6 +54,33 @@ class TestContextBuilder:
         assert "src/main.py" in context.imports_added
         assert "os" in context.imports_added["src/main.py"]
 
+    @pytest.mark.parametrize("extension", [".ts", ".js"])
+    @pytest.mark.parametrize(
+        ("declaration", "name"),
+        [
+            ("function plainFunction() {", "plainFunction"),
+            ("export function exportedFunction() {", "exportedFunction"),
+            ("async function asyncFunction() {", "asyncFunction"),
+            (
+                "export async function exportedAsyncFunction() {",
+                "exportedAsyncFunction",
+            ),
+        ],
+    )
+    def test_extract_javascript_function_names(self, extension, declaration, name):
+        path = f"src/example{extension}"
+        changes = [
+            FileChange(
+                path=path,
+                added_lines=[declaration],
+                removed_lines=[declaration],
+            )
+        ]
+
+        context = ContextBuilder().build(changes)
+
+        assert context.functions_changed[path] == [f"+{name}", f"-{name}"]
+
     def test_prompt_context_output(self):
         changes = [
             FileChange(path="src/main.py"),
