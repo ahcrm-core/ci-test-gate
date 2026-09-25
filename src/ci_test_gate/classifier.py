@@ -10,6 +10,13 @@ from .context_builder import ChangeContext
 from .diff_parser import DiffParser, FileChange
 from .llm import LLMConfig
 
+# Module-level placeholder so tests can patch OpenAI without triggering a
+# hard import at import time (the openai package is optional at runtime).
+try:
+    from openai import OpenAI
+except ImportError:  # pragma: no cover — guarded at runtime
+    OpenAI = None
+
 @dataclass
 class TestRecommendation:
     """Recommendation of which tests to run."""
@@ -197,9 +204,12 @@ class LLMTestClassifier(TestClassifier):
         user_prompt = "\n".join(user_prompt_parts)
 
         try:
-            from openai import OpenAI
-
-            client = OpenAI(api_key=llm_cfg.api_key, base_url=llm_cfg.base_url)
+            # Use the module-level OpenAI (patched by tests). At import time
+            # this is bound to ``openai.OpenAI``; at test time it is a MagicMock.
+            client = OpenAI(
+                api_key=llm_cfg.api_key,
+                base_url=llm_cfg.base_url,
+            )
             response = client.chat.completions.create(
                 model=llm_cfg.model,
                 temperature=llm_cfg.temperature,
