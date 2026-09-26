@@ -57,6 +57,15 @@ class TestTestClassifier:
         )
         assert rec.recommended == []
 
+    def test_config_change_preserves_source_matched_required_test(self):
+        changes = [FileChange(path="pyproject.toml"), FileChange(path="src/foo.py")]
+        rec = TestClassifier().classify(
+            changes, ChangeContext(changed_files=changes),
+            ["tests/test_foo.py", "tests/test_bar.py"],
+        )
+        assert rec.required == ["tests/test_foo.py"]
+        assert rec.recommended == ["tests/test_bar.py"]
+
 
 class TestTestRecommendation:
     def test_to_json(self):
