@@ -111,10 +111,18 @@ class TestClassifier:
             _is_project_config_path(change.path) for change in changes
         ):
             all_tests = list(dict.fromkeys(test_files or []))
-            changed_tests = {change.path for change in changes} & set(all_tests)
+            non_config_changes = [
+                change for change in changes if not _is_project_config_path(change.path)
+            ]
+            direct_matches = self.heuristic_classify(
+                non_config_changes, context, all_tests
+            ).required
+            required = set(direct_matches) | (
+                {change.path for change in changes} & set(all_tests)
+            )
             return TestRecommendation(
-                required=[test for test in all_tests if test in changed_tests],
-                recommended=[test for test in all_tests if test not in changed_tests],
+                required=[test for test in all_tests if test in required],
+                recommended=[test for test in all_tests if test not in required],
                 reasoning="Project configuration changed; recommend every available test.",
             )
         required: list[str] = []
