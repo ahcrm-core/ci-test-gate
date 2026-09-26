@@ -42,6 +42,21 @@ class TestTestClassifier:
         savings = classifier._estimate_savings(["a"], ["b", "c", "d"])
         assert 0 <= savings <= 95
 
+    def test_config_change_recommends_all_and_keeps_changed_test_required(self):
+        tests = ["tests/test_foo.py"] + [f"tests/test_other_{i}.py" for i in range(12)]
+        changes = [FileChange(path="pyproject.toml"), FileChange(path=tests[0])]
+        rec = TestClassifier().classify(changes, ChangeContext(changed_files=changes), tests)
+        assert rec.required == [tests[0]]
+        assert rec.recommended == tests[1:]
+        assert rec.optional == []
+
+    def test_config_change_normal_mode_uses_existing_matching(self):
+        changes = [FileChange(path="pyproject.toml")]
+        rec = TestClassifier(config={"config_changes": "normal"}).classify(
+            changes, ChangeContext(changed_files=changes), ["tests/test_other.py"]
+        )
+        assert rec.recommended == []
+
 
 class TestTestRecommendation:
     def test_to_json(self):
