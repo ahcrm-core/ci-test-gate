@@ -41,8 +41,9 @@ jobs:
           script: |
             // The report is read from disk instead of being interpolated into this
             // script: its content is derived from the PR diff, which for fork PRs is
-            // untrusted. Interpolating it via ${{ }} would let a backtick in the diff
-            // break out of the template literal and execute arbitrary JS.
+            // untrusted. Interpolating it through a GitHub expression would let a
+            // backtick in the diff break out of the template literal and run
+            // arbitrary JavaScript in the runner.
             const fs = require('fs');
             const report = fs.readFileSync(process.env.GATE_REPORT, 'utf8');
 
