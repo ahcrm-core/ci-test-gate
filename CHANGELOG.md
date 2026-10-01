@@ -5,6 +5,8 @@ All notable changes to ci-test-gate will be documented in this file.
 ## [Unreleased]
 
 ### Fixed
+- **BUG**: The CI Test Gate workflow failed on every pull request opened from a fork with `Resource not accessible by integration`. Fork runs get a read-only GITHUB_TOKEN, so the PR comment step could never succeed. The recommendation is now always written to the job summary, and only a 403 from the comment API is treated as non-fatal.
+- **SECURITY**: The gate interpolated diff-derived text into the github-script body through a GitHub expression. A backtick in a fork PR's diff could break out of the template literal and execute arbitrary JavaScript in the runner. The report is now read from disk and passed via an environment variable.
 - **BUG**: Gate mode logic was inverted — failed when no required tests existed and passed when required tests were missing. Now correctly returns exit code 2 only when required tests are NOT covered by the provided test files list. (#43)
 
 ## [0.1.0] - 2026-09-11
