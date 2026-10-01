@@ -9,6 +9,9 @@ All notable changes to ci-test-gate will be documented in this file.
 - **SECURITY**: The gate interpolated diff-derived text into the github-script body through a GitHub expression. A backtick in a fork PR's diff could break out of the template literal and execute arbitrary JavaScript in the runner. The report is now read from disk and passed via an environment variable.
 - **BUG**: Gate mode logic was inverted — failed when no required tests existed and passed when required tests were missing. Now correctly returns exit code 2 only when required tests are NOT covered by the provided test files list. (#43)
 
+### Added
+- Test coverage for the CI Test Gate workflow itself. Both defects above lived entirely in `.github/workflows/test-gate.yml`, where the unit suite could not see them and no fork PR had yet exercised the fixed path. The new tests assert the workflow keeps reporting the recommendation to the job summary before the comment is attempted, treats only a 403 from the comment API as non-fatal, never interpolates diff-derived text into the script body, and rejects an empty gate report.
+
 ## [0.1.0] - 2026-09-11
 
 ### Added
